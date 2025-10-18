@@ -1,0 +1,18 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: backend-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hukukdb
+    username: postgres
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+ai:
+  python:
+    base-url: http://localhost:5000  # Python servisin çalıştığı adres
