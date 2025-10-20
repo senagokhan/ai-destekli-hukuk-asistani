@@ -1,18 +1,14 @@
-server:
-  port: 8080
-
 spring:
   application:
     name: backend-service
-  datasource:
-    url: jdbc:postgresql://localhost:5432/hukukdb
-    username: postgres
-    password: 1234
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  profiles:
+    active: dev
 
-ai:
-  python:
-    base-url: http://localhost:5000  # Python servisin çalıştığı adres
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
