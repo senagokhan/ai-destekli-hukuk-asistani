@@ -14,3 +14,8 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+security:
+  jwt:
+    secret: "TgE6rS#x7W!zLp9mF^aQ3bt7uV@jX1pZkR5dN2tC%yG0eS3rW!qB4hJ2lK9vY0a"
+    access-exp-min: 30
+    refresh-exp-days: 7
