@@ -9,6 +9,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -21,6 +23,7 @@ public class DocumentController {
     private final DocumentService documentService;
     private final CaseFileService caseFileService;
 
+    @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @PostMapping("/upload")
     public ResponseEntity<Document> uploadFile(
             @RequestParam("file") MultipartFile file,
@@ -41,6 +44,7 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(uploaded);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @GetMapping
     public ResponseEntity<List<Document>> listAll(
             @RequestParam(value = "type", required = false) DocumentType type
@@ -50,11 +54,13 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.listAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @GetMapping("/{id}")
     public ResponseEntity<Document> get(@PathVariable Long id) {
         return ResponseEntity.ok(documentService.get(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> download(@PathVariable Long id) {
         Resource resource = documentService.loadAsResource(id);
@@ -64,6 +70,7 @@ public class DocumentController {
                 .body(resource);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
         documentService.delete(id);
