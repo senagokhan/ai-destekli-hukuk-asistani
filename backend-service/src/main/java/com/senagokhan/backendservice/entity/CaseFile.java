@@ -37,4 +37,5 @@ public class CaseFile {
     @JoinColumn(name = "case_id")
     @Builder.Default
     private List<Document> documents = new ArrayList<>();
+
 }

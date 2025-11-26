@@ -17,12 +17,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/documents")
-@RequiredArgsConstructor
 public class DocumentController {
 
     private final DocumentService documentService;
     private final CaseFileService caseFileService;
 
+    public DocumentController(DocumentService documentService, CaseFileService caseFileService) {
+        this.documentService = documentService;
+        this.caseFileService = caseFileService;
+    }
     @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @PostMapping("/upload")
     public ResponseEntity<Document> uploadFile(

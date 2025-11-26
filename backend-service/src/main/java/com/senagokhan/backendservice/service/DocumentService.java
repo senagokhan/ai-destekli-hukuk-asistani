@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
@@ -25,6 +24,11 @@ public class DocumentService {
 
     @Value("${file.upload-dir:./uploads}")
     private String uploadDir;
+
+    public DocumentService(DocumentRepository documentRepository, CaseFileService caseFileService) {
+        this.documentRepository = documentRepository;
+        this.caseFileService = caseFileService;
+    }
 
     public Document upload(MultipartFile file, String type, String category, Long caseId) throws IOException {
         validateMultipart(file);

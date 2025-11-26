@@ -8,14 +8,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cases")
-@RequiredArgsConstructor
 public class CaseFileController {
 
     private final CaseFileService caseFileService;
 
+    public CaseFileController(CaseFileService caseFileService) {
+        this.caseFileService = caseFileService;
+    }
     @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
     @GetMapping
     public List<CaseFile> getAllCases() {
@@ -49,4 +52,16 @@ public class CaseFileController {
         CaseFile updated = caseFileService.addDocumentToCase(id, document);
         return ResponseEntity.ok(updated);
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN','LAWYER')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<CaseFile> updateCaseStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        String newStatus = body.get("status");
+        CaseFile updatedCase = caseFileService.updateCaseStatus(id, newStatus);
+        return ResponseEntity.ok(updatedCase);
+    }
+
 }

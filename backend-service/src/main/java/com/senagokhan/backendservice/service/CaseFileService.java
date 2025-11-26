@@ -10,10 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CaseFileService {
 
     private final CaseFileRepository caseFileRepository;
+
+    public CaseFileService(CaseFileRepository caseFileRepository) {
+        this.caseFileRepository = caseFileRepository;
+    }
 
     public List<CaseFile> getAllCases() {
         return caseFileRepository.findAll();
@@ -32,7 +35,7 @@ public class CaseFileService {
         caseFileRepository.deleteById(id);
     }
 
-    public CaseFile createCaseFromDocument(Document document, String category) {
+    public void createCaseFromDocument(Document document, String category) {
 
         CaseFile caseFile = CaseFile.builder()
                 .title(document.getOriginalFilename())
@@ -51,13 +54,19 @@ public class CaseFileService {
         }
         caseFile.getDocuments().add(document);
 
-        return caseFileRepository.save(caseFile);
+        caseFileRepository.save(caseFile);
     }
-
 
     public CaseFile addDocumentToCase(Long caseId, Document document) {
         CaseFile caseFile = getCaseById(caseId);
         caseFile.getDocuments().add(document);
         return caseFileRepository.save(caseFile);
     }
+
+    public CaseFile updateCaseStatus(Long id, String newStatus) {
+        CaseFile caseFile = getCaseById(id);
+        caseFile.setStatus(newStatus);
+        return caseFileRepository.save(caseFile);
+    }
+
 }
