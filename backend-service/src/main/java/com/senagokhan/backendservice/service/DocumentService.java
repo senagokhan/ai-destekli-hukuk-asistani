@@ -152,4 +152,9 @@ public class DocumentService {
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
         return target;
     }
+
+    public Document update(Document document) {
+        return documentRepository.save(document);
+    }
+
 }

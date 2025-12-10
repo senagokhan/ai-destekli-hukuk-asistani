@@ -30,6 +30,9 @@ public class Document {
     @Column(nullable = false)
     private DocumentType documentType;
 
+    @Column(name = "index_path")
+    private String indexPath;
+
     @Builder.Default
     private Instant uploadedAt = Instant.now();
 }
