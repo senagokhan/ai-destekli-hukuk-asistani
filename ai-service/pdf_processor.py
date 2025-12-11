@@ -1,22 +1,15 @@
-import fitz  # PyMuPDF
+import fitz
 import re
 
 
-# ---------------------------------------------------
-# 1) PDF'TEN SAYFA SAYFA METİN ÇIKARMA
-# ---------------------------------------------------
+# PDF'TEN SAYFA SAYFA METİN ÇIKARMA
 def extract_pdf_text(file_path: str) -> list[str]:
-    """
-    PDF dosyasındaki her sayfanın metnini ayrı bir string olarak döner.
-    index 0 = 1. sayfa, index 1 = 2. sayfa ...
-    """
     doc = fitz.open(file_path)
     pages_text = []
 
     for page in doc:
         text = page.get_text("text")
 
-        # Gereksiz boşlukları temizleyelim
         cleaned = "\n".join(
             line.strip()
             for line in text.splitlines()
@@ -28,9 +21,7 @@ def extract_pdf_text(file_path: str) -> list[str]:
     return pages_text
 
 
-# ---------------------------------------------------
-# 2) METNİ CÜMLELERE BÖLME
-# ---------------------------------------------------
+# METNİ CÜMLELERE BÖLME
 SENTENCE_SPLIT_REGEX = re.compile(r'(?<=[.!?])\s+')
 
 def split_into_sentences(text: str) -> list[str]:
@@ -41,9 +32,7 @@ def split_into_sentences(text: str) -> list[str]:
     return [s.strip() for s in sentences if s.strip()]
 
 
-# ---------------------------------------------------
-# 3) CÜMLELERDEN CHUNK OLUŞTURMA
-# ---------------------------------------------------
+# CÜMLELERDEN CHUNK OLUŞTURMA
 def make_chunks_from_sentences(
     sentences: list[str],
     max_chars: int = 800,
@@ -62,24 +51,19 @@ def make_chunks_from_sentences(
         if len(candidate) <= max_chars:
             current.append(sent)
         else:
-            # Chunk hazır, listeye ekle
             if current:
                 chunks.append(" ".join(current))
 
-            # Overlap ayarı
             current = current[-overlap:] if overlap > 0 else []
             current.append(sent)
 
-    # Son chunk
     if current:
         chunks.append(" ".join(current))
 
     return chunks
 
 
-# ---------------------------------------------------
-# 4) TÜM PDF'İ CHUNK'LARA AYIRMA
-# ---------------------------------------------------
+# TÜM PDF'İ CHUNK'LARA AYIRMA
 def extract_and_chunk_pdf(file_path: str) -> list[dict]:
     """
     PDF'teki her sayfayı cümlelere böler, chunk'lar oluşturur

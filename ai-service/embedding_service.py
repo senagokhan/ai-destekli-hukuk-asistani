@@ -4,15 +4,12 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 
-# ------------------------------------------------------------
-# 1) MODEL YÜKLEME
-# ------------------------------------------------------------
+# MODEL YÜKLEME
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", device="cpu")
 
 
-# ------------------------------------------------------------
-# 2) CHUNK METİNLERİNDEN EMBEDDING OLUŞTURMA
-# ------------------------------------------------------------
+
+# CHUNK METİNLERİNDEN EMBEDDING OLUŞTURMA
 def create_embeddings_from_chunks(chunks: list[dict]) -> tuple[np.ndarray, list[dict]]:
     """
     Chunk listesinden vektör embedding üretir.
@@ -21,39 +18,58 @@ def create_embeddings_from_chunks(chunks: list[dict]) -> tuple[np.ndarray, list[
       - metadata listesi
     """
     texts = [chunk["text"] for chunk in chunks]
-    metadata = [{"page": c["page"], "chunk_index": c["chunk_index"]} for c in chunks]
+
+    metadata = [
+        {
+            "page": c["page"],
+            "chunk_index": c["chunk_index"],
+            "text": c["text"]    
+        }
+        for c in chunks
+    ]
 
     embeddings = model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
 
     return embeddings, metadata
 
 
-# ------------------------------------------------------------
-# 3) FAISS INDEX OLUŞTURMA ve KAYDETME
-# ------------------------------------------------------------
+# FAISS INDEX OLUŞTURMA ve KAYDETME
 def save_faiss_index(embeddings: np.ndarray, metadata: list[dict], index_path: str):
+    import os, json
+
+    abs_path = os.path.abspath(index_path)
+    os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+
     dim = embeddings.shape[1]
     index = faiss.IndexFlatL2(dim)
     index.add(embeddings)
 
-    # FAISS index kaydet
-    faiss.write_index(index, index_path)
+    faiss.write_index(index, abs_path)
 
-    # Metadata kaydet
-    np.save(index_path + "_metadata.npy", metadata)
+    # ► Metadata JSON olarak kaydedilir
+    with open(abs_path + "_metadata.json", "w", encoding="utf-8") as f:
+        json.dump(metadata, f, ensure_ascii=False)
+
+    print(f"FAISS index kaydedildi → {abs_path}")
 
 
-# ------------------------------------------------------------
-# 4) FAISS INDEX YÜKLEME
-# ------------------------------------------------------------
+
+
 def load_faiss_index(index_path: str):
-    index = faiss.read_index(index_path)
-    metadata = np.load(index_path + "_metadata.npy", allow_pickle=True).tolist()
+    import os, json
+
+    abs_path = os.path.abspath(index_path)
+
+    index = faiss.read_index(abs_path)
+
+    with open(abs_path + "_metadata.json", "r", encoding="utf-8") as f:
+        metadata = json.load(f)
+
     return index, metadata
 
 
-# ------------------------------------------------------------
-# 5) SORU EMBEDDING'İ OLUŞTURMA
-# ------------------------------------------------------------
+
+
+# SORU EMBEDDING'İ OLUŞTURMA
 def embed_query(query: str):
     return model.encode([query], convert_to_numpy=True)
