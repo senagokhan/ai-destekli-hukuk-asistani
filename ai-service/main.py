@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
+from pathlib import Path
+from fastapi import HTTPException
 
 # -----------------------------
 # OPENROUTER CLIENT AYARLARI
@@ -68,7 +70,7 @@ class EmbeddingCreateRequest(BaseModel):
 
 class QueryRequest(BaseModel):
     query: str
-    index_path: str
+    index_name: str
     top_k: int = 3
 
 
@@ -148,12 +150,31 @@ def query_embeddings(req: QueryRequest):
 @app.post("/rag/answer")
 def rag_answer(req: QueryRequest):
 
-    try:
-        index, metadata = load_faiss_index(req.index_path)
-    except Exception:
-        raise HTTPException(status_code=404, detail="Index not found.")
+    # 1️⃣ AI service'in kendi index klasörü
+    BASE_INDEX_DIR = Path(__file__).resolve().parent / "indexes"
 
+    # 2️⃣ Backend'ten gelen index adı (örn: "27.index")
+    index_name = req.index_name
+
+    # 3️⃣ Gerçek dosya yolu
+    index_path = BASE_INDEX_DIR / index_name
+
+    # 4️⃣ Index var mı?
+    if not index_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Index not found: {index_path}"
+        )
+
+    # 5️⃣ FAISS index + metadata yükle
+    try:
+        index, metadata = load_faiss_index(str(index_path))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    # 6️⃣ Query embedding
     q_emb = embed_query(req.query)
+
     distances, indices = index.search(q_emb, req.top_k)
 
     context_chunks = []
