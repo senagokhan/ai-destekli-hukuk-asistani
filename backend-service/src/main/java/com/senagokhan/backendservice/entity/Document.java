@@ -35,4 +35,8 @@ public class Document {
 
     @Builder.Default
     private Instant uploadedAt = Instant.now();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_file_id")
+    private CaseFile caseFile;
 }

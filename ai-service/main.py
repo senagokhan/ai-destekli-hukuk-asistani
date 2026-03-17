@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import os
 from pathlib import Path
 from fastapi import HTTPException
+from pathlib import Path
 
 # -----------------------------
 # OPENROUTER CLIENT AYARLARI
@@ -150,29 +151,23 @@ def query_embeddings(req: QueryRequest):
 @app.post("/rag/answer")
 def rag_answer(req: QueryRequest):
 
-    # 1️⃣ AI service'in kendi index klasörü
     BASE_INDEX_DIR = Path(__file__).resolve().parent / "indexes"
 
-    # 2️⃣ Backend'ten gelen index adı (örn: "27.index")
     index_name = req.index_name
 
-    # 3️⃣ Gerçek dosya yolu
     index_path = BASE_INDEX_DIR / index_name
 
-    # 4️⃣ Index var mı?
     if not index_path.exists():
         raise HTTPException(
             status_code=404,
             detail=f"Index not found: {index_path}"
         )
 
-    # 5️⃣ FAISS index + metadata yükle
     try:
         index, metadata = load_faiss_index(str(index_path))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    # 6️⃣ Query embedding
     q_emb = embed_query(req.query)
 
     distances, indices = index.search(q_emb, req.top_k)
@@ -206,4 +201,38 @@ Cevap:
         "answer": answer,
         "context_used": context,
         "retrieved_chunks": len(context_chunks)
+    }
+
+from embedding_service import classify_case_text
+
+
+class CaseClassificationRequest(BaseModel):
+    index_name: str
+
+
+
+@app.post("/case/classify")
+def classify_case(req: CaseClassificationRequest):
+
+    BASE_INDEX_DIR = Path(__file__).resolve().parent / "indexes"
+    index_path = BASE_INDEX_DIR / req.index_name
+
+    if not index_path.exists():
+        raise HTTPException(status_code=404, detail="Index not found")
+
+    index, metadata = load_faiss_index(str(index_path))
+
+    all_text = []
+    for m in metadata:
+        if m.get("text"):
+            all_text.append(m["text"])
+
+    full_text = " ".join(all_text)
+
+    result = classify_case_text(full_text)
+
+    return {
+        "predictedCaseType": result["predictedCaseType"],
+        "confidenceScore": result["confidenceScore"],
+        "summaryReason": result["summaryReason"]
     }

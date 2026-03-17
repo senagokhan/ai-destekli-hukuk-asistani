@@ -1,5 +1,6 @@
 package com.senagokhan.backendservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -22,7 +23,8 @@ public class CaseFile {
     @Column(nullable = false)
     private String title;
 
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private CaseType category;
 
     private LocalDate openedDate;
 
@@ -33,9 +35,18 @@ public class CaseFile {
     @Builder.Default
     private String status = "PENDING";
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "case_id")
+    @OneToMany(mappedBy = "caseFile", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonManagedReference
     private List<Document> documents = new ArrayList<>();
 
+    public void addDocument(Document document) {
+        documents.add(document);
+        document.setCaseFile(this);
+    }
+
+    public void removeDocument(Document document) {
+        documents.remove(document);
+        document.setCaseFile(null);
+    }
 }

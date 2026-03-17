@@ -8,6 +8,37 @@ from sentence_transformers import SentenceTransformer
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", device="cpu")
 
 
+categories = {
+    "IS_HUKUKU": "işçi işveren kıdem tazminatı iş sözleşmesi fesih işe iade mesai",
+    "CEZA_HUKUKU": "sanık savcı ceza suçu suç mahkeme iddianame beraat mahkumiyet",
+    "TICARET_HUKUKU": "ticari şirket ortaklık çek senet fatura ticaret alacak",
+    "AILE_HUKUKU": "boşanma velayet nafaka eş evlilik aile",
+    "BORCLAR_HUKUKU": "borç alacak sözleşme tazminat yükümlülük",
+    "ICRA_IFLAS": "icra haciz iflas takip borçlu alacaklı",
+    "TUKETICI_HUKUKU": "tüketici ayıplı mal cayma bedel iade satıcı",
+    "DIGER": "hukuki uyuşmazlık dava dilekçe karar mahkeme"
+}
+
+def classify_case_text(text: str):
+    text_embedding = model.encode(text)
+
+    best_score = -1
+    best_category = "DIGER"
+
+    for cat, desc in categories.items():
+        desc_embedding = model.encode(desc)
+        score = util.cos_sim(text_embedding, desc_embedding).item()
+
+        if score > best_score:
+            best_score = score
+            best_category = cat
+
+    return {
+        "predictedCaseType": best_category,
+        "confidenceScore": float(best_score),
+        "summaryReason": "Embedding similarity classification"
+    }
+    
 
 # CHUNK METİNLERİNDEN EMBEDDING OLUŞTURMA
 def create_embeddings_from_chunks(chunks: list[dict]) -> tuple[np.ndarray, list[dict]]:

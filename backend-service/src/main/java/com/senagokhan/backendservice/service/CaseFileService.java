@@ -37,22 +37,23 @@ public class CaseFileService {
 
     public void createCaseFromDocument(Document document, String category) {
 
+        CaseType caseType;
+
+        if (category != null && !category.isBlank()) {
+            caseType = CaseType.valueOf(category);
+        } else {
+            caseType = CaseType.DIGER;
+        }
+
         CaseFile caseFile = CaseFile.builder()
                 .title(document.getOriginalFilename())
-                .category(
-                        (category != null && !category.isBlank())
-                                ? category
-                                : "Bilinmiyor"
-                )
+                .category(caseType)
                 .openedDate(LocalDate.now())
                 .description(" Dava dosyası")
                 .status("PENDING")
                 .build();
 
-        if (caseFile.getDocuments() == null) {
-            caseFile.setDocuments(new ArrayList<>());
-        }
-        caseFile.getDocuments().add(document);
+        caseFile.addDocument(document);
 
         caseFileRepository.save(caseFile);
     }
