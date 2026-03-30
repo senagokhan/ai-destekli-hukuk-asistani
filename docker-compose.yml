@@ -1,4 +1,7 @@
+version: "3.9"
+
 services:
+
   postgres:
     image: postgres:16
     container_name: pg-legal
@@ -17,6 +20,26 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: ./backend
+    container_name: spring-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  ai-service:
+    build: ./ai-service
+    container_name: fastapi-ai
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: react-frontend
+    ports:
+      - "3000:3000"
+
 volumes:
   pgdata:
-    driver: local
