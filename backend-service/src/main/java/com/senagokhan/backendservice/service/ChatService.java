@@ -18,7 +18,7 @@ public class ChatService {
     private final RestTemplate restTemplate;
     private final DocumentRepository documentRepository;
 
-    @Value("${ai.service.url:http://127.0.0.1:8000}")
+    @Value("${app.ai.service.url}")
     private String aiServiceUrl;
 
     public ChatService(
@@ -31,16 +31,16 @@ public class ChatService {
 
     public ChatResponse askAi(ChatRequest req) {
 
-        // 0️⃣ Belge seçilmemişse
+        // Belge seçilmemişse
         if (req.getDocumentId() == null) {
             throw new IllegalArgumentException("Document seçilmeden soru sorulamaz");
         }
 
-        // 1️⃣ Document'i bul
+        // Document'i bul
         Document document = documentRepository.findById(req.getDocumentId())
                 .orElseThrow(() -> new IllegalArgumentException("Document not found"));
 
-        // 2️⃣ DB'deki index bilgisinden SADECE dosya adını al
+        // DBdeki index bilgisinden SADECE dosya adını al
         // Örn: "indexes/27.index" → "27.index"
         String rawIndexPath = document.getIndexPath();
 
@@ -54,13 +54,13 @@ public class ChatService {
 
         System.out.println("USING INDEX NAME = " + indexName);
 
-        // 3️⃣ Python (AI) servisine gönderilecek payload
+        //AI servisine gönderilecek payload
         Map<String, Object> payload = new HashMap<>();
         payload.put("query", req.getMessage());
         payload.put("index_name", indexName);
         payload.put("top_k", 3);
 
-        // 4️⃣ AI servisine istek
+        //AI servisine istek
         Map<?, ?> aiResponse;
         try {
             aiResponse = restTemplate.postForObject(
@@ -78,7 +78,7 @@ public class ChatService {
             throw new IllegalStateException("AI servisinden boş cevap alındı");
         }
 
-        // 5️⃣ Cevabı map'ten çıkar
+        //Cevabı map'ten çıkar
         ChatResponse response = new ChatResponse();
         response.setAnswer((String) aiResponse.get("answer"));
         response.setContextUsed((String) aiResponse.get("context_used"));

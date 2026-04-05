@@ -1,0 +1,14 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+fastapi
+uvicorn
+pydantic
+requests
+openai
+pymupdf
+faiss-cpu
+
+numpy<2
+torch==2.2.2
+sentence-transformers==2.6.1
+scikit-learn

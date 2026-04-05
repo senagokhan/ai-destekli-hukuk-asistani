@@ -1,6 +1,7 @@
 package com.senagokhan.backendservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -12,7 +13,8 @@ public class AiAnalysisClientService {
 
     private final RestTemplate restTemplate;
 
-    private final String AI_URL = "http://localhost:8000/case/classify";
+    @Value("${app.ai.service.url}")
+    private String aiServiceUrl;
 
     public Map<String, Object> callAiService(String indexName) {
 
@@ -21,7 +23,7 @@ public class AiAnalysisClientService {
         );
 
         return restTemplate.postForObject(
-                AI_URL,
+                aiServiceUrl + "/case/classify",
                 request,
                 Map.class
         );
