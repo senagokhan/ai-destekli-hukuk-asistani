@@ -40,7 +40,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      OPENROUTER_API_KEY: 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
+      OPENROUTER_API_KEY: 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
     volumes:
       - shared-data:/app/uploads
       - shared-indexes:/app/indexes
